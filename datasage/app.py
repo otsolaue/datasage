@@ -61,6 +61,35 @@ def pipeline_nav():
         st.session_state.active_stage = "settings"
 
 
+# ── Ingest helpers ────────────────────────────────────────────────────────────
+def _read_uploaded_file(uploaded) -> str:
+    name = uploaded.name.lower()
+
+    if name.endswith(".pdf"):
+        import pypdf
+        reader = pypdf.PdfReader(uploaded)
+        pages = [page.extract_text() or "" for page in reader.pages]
+        return "\n\n".join(pages)
+
+    if name.endswith(".csv"):
+        import csv as _csv
+        import io
+        content = uploaded.read().decode("utf-8", errors="replace")
+        reader = _csv.reader(io.StringIO(content))
+        rows = list(reader)
+        if not rows:
+            return ""
+        # Represent CSV as a readable text table
+        header = rows[0]
+        lines = [", ".join(header), "-" * 40]
+        for row in rows[1:]:
+            lines.append(", ".join(f"{h}: {v}" for h, v in zip(header, row)))
+        return "\n".join(lines)
+
+    # .txt and .md — plain text
+    return uploaded.read().decode("utf-8", errors="replace")
+
+
 # ── Stage: Ingest ─────────────────────────────────────────────────────────────
 def stage_ingest():
     st.header("📥 Ingest")
@@ -73,9 +102,16 @@ def stage_ingest():
         text = st.text_area("Paste your text here", height=300, key="ingest_paste")
 
     with tab_file:
-        uploaded = st.file_uploader("Upload a .txt file", type=["txt"])
+        uploaded = st.file_uploader(
+            "Upload a file",
+            type=["txt", "md", "csv", "pdf"],
+            help="Supported formats: plain text, Markdown, CSV, PDF",
+        )
         if uploaded:
-            text = uploaded.read().decode("utf-8", errors="replace")
+            with st.spinner("Reading file…"):
+                text = _read_uploaded_file(uploaded)
+            ext = uploaded.name.rsplit(".", 1)[-1].upper()
+            st.caption(f"{ext} · {len(text):,} characters extracted")
             st.text_area("Preview", text[:2000], height=200, disabled=True)
 
     if st.button("Use this text →", type="primary", disabled=not text.strip()):
