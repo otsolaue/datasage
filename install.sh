@@ -45,14 +45,14 @@ for candidate in python3 python; do
     if command -v "$candidate" >/dev/null 2>&1; then
         ver=$("$candidate" -c "import sys; print(sys.version_info[:2])" 2>/dev/null)
         case "$ver" in
-            "(3, 1"[0-3]*)
+            "(3, 1"[0-9]*)
                 PYTHON="$candidate"
                 break
                 ;;
         esac
     fi
 done
-[ -z "$PYTHON" ] && err "Python 3.10–3.13 is required. Please install it and re-run."
+[ -z "$PYTHON" ] && err "Python 3.10+ is required. Please install it and re-run."
 step "Python" "$($PYTHON --version)"
 
 # ── Create venv ───────────────────────────────────────────────────────────────
