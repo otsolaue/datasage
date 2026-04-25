@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=74.0", "setuptools-scm>=8.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "datasage"
+dynamic = ["version"]
+description = "Visual NLP pipeline builder for non-technical users"
+readme = "README.md"
+requires-python = ">=3.10,<3.14"
+license = "Apache-2.0"
+keywords = ["nlp", "data pipeline", "llm", "text processing", "data science"]
+authors = [
+    {name = "otsolaue"},
+]
+
+dependencies = [
+    "streamlit>=1.35.0",
+    "pydantic>=2.0",
+    "pyyaml>=6.0",
+    "typer>=0.12.0",
+    "rich>=13.0",
+]
+
+[project.optional-dependencies]
+anthropic = ["anthropic>=0.28.0"]
+openai   = ["openai>=1.30.0"]
+ollama   = ["ollama>=0.2.0"]
+all      = ["anthropic>=0.28.0", "openai>=1.30.0", "ollama>=0.2.0"]
+
+[project.scripts]
+datasage = "datasage.cli:app"
+
+[tool.setuptools.dynamic]
+version = {attr = "datasage.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["datasage*"]
